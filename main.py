@@ -30,7 +30,6 @@ def create_tables():
             conn.close()
 
 def insert_weather(date, weather, temp_max, temp_min):
-    """ insert multiple vendors into the vendors table  """
     sql = "INSERT INTO weather(city, date, weather, temp_max, temp_min) VALUES('Ryazan',%s ,%s, %s, %s)"
     conn = None
     try:
