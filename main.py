@@ -5,15 +5,15 @@ from config import config
 def create_tables():
     commands = (
         """
-        CREATE TABLE IF NOT EXISTS weather(
+        CREATE TABLE IF NOT EXISTS weather (
                 id serial PRIMARY KEY,
-                city varchar(50) NOT NULL,
-                date varchar(50) NOT NULL,
-                weather varchar(50) NOT NULL,
-                temp_max varchar(50) NOT NULL,
-                temp_min varchar(50) NOT NULL
+                city varchar(50) UNIQUE NOT NULL ,
+                date varchar(50) UNIQUE NOT NULL,
+                weather varchar(50) UNIQUE NOT NULL,
+                temp_max varchar(50) UNIQUE NOT NULL,
+                temp_min varchar(50) UNIQUE NOT NULL
         )
-        """)
+        """,)
     conn = None
     try:
         params = config()
@@ -30,7 +30,6 @@ def create_tables():
             conn.close()
 
 def insert_weather(date, weather, temp_max, temp_min):
-    """ insert multiple vendors into the vendors table  """
     sql = "INSERT INTO weather(city, date, weather, temp_max, temp_min) VALUES('Ryazan',%s ,%s, %s, %s)"
     conn = None
     try:
@@ -57,4 +56,3 @@ if __name__ == '__main__':
             temp_max = record['temp2m']['max']
             temp_min = record['temp2m']['min']
             insert_weather(date, weather, temp_max, temp_min)
-    
