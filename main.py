@@ -8,10 +8,10 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS weather(
                 id serial PRIMARY KEY,
                 city varchar(50) NOT NULL,
-                date varchar(50) NOT NULL,
-                weather varchar(50) NOT NULL,
-                temp_max varchar(50) NOT NULL,
-                temp_min varchar(50) NOT NULL
+                date varchar(50) UNIQUE NOT NULL,
+                weather varchar(50) UNIQUE NOT NULL,
+                temp_max varchar(50) UNIQUE NOT NULL,
+                temp_min varchar(50) UNIQUE NOT NULL
         )
         """)
     conn = None
@@ -28,6 +28,8 @@ def create_tables():
     finally:
         if conn is not None:
             conn.close()
+
+
 
 def insert_weather(date, weather, temp_max, temp_min):
     sql = "INSERT INTO weather(city, date, weather, temp_max, temp_min) VALUES('Ryazan',%s ,%s, %s, %s)"
@@ -46,6 +48,7 @@ def insert_weather(date, weather, temp_max, temp_min):
             conn.close()
                        
 if __name__ == '__main__':
+    create_tables()
     url = f'https://www.7timer.info/bin/civillight.php?lon=39&lat=54&ac=0&unit=metric&output=json&tzshift=0'
     response = requests.get(url)
     if response.status_code == 200:
