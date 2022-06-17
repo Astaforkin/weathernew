@@ -8,8 +8,7 @@ def create_tables():
         """
         CREATE TABLE IF NOT EXISTS weather (
                 id serial PRIMARY KEY,
-<<<<<<< HEAD
-                city varchar(50) NOT NULL,
+                city varchar(50) UNIQUE NOT NULL,
                 date varchar(50) UNIQUE NOT NULL,
                 weather varchar(50) NOT NULL,
                 temp_max varchar(50) NOT NULL,
@@ -17,15 +16,6 @@ def create_tables():
         )
         """,
     )
-=======
-                city varchar(50) UNIQUE NOT NULL ,
-                date varchar(50) UNIQUE NOT NULL,
-                weather varchar(50) UNIQUE NOT NULL,
-                temp_max varchar(50) UNIQUE NOT NULL,
-                temp_min varchar(50) UNIQUE NOT NULL
-        )
-        """,)
->>>>>>> master
     conn = None
     try:
         params = config()
@@ -43,11 +33,7 @@ def create_tables():
 
 
 def insert_weather(date, weather, temp_max, temp_min):
-<<<<<<< HEAD
     sql = "INSERT INTO weather (city, date, weather, temp_max, temp_min) VALUES('Ryazan',%s ,%s, %s, %s)"
-=======
-    sql = "INSERT INTO weather(city, date, weather, temp_max, temp_min) VALUES('Ryazan',%s ,%s, %s, %s)"
->>>>>>> master
     conn = None
     try:
         params = config()
@@ -76,7 +62,6 @@ def insert_table():
     response = requests.get(url)
     if response.status_code == 200:
         response_data = response.json()
-<<<<<<< HEAD
         for record in response_data["dataseries"]:
             date = record["date"]
             weather = record["weather"]
@@ -106,11 +91,3 @@ def update_table():
 
 if __name__ == "__main__":
     insert_table()
-=======
-        for record in response_data['dataseries']:
-            date = record['date']
-            weather = record['weather']
-            temp_max = record['temp2m']['max']
-            temp_min = record['temp2m']['min']
-            insert_weather(date, weather, temp_max, temp_min)
->>>>>>> master
