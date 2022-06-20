@@ -1,3 +1,4 @@
+from ast import arguments
 from mysqlx import Statement
 import psycopg2
 import requests
@@ -89,17 +90,33 @@ def run_sql(statement, arguments):
         if conn is not None:
             conn.close()
 
-def ryazan_dataseries():
-    url = f"https://www.7timer.info/bin/civillight.php?lon=39&lat=54&ac=0&unit=metric&output=json&tzshift=0"
+# def get_data_from_weather_api(lon, lat):
+#     url = f'https://www.7timer.info/bin/civillight.php?lon={lon}&lat={lat}&ac=0&unit=metric&output=json&tzshift=0'
+#     response = requests.get(url)
+#     if response.status_code == 200:
+#         response_data = response.json()
+#         for record in response_data["dataseries"]:
+#             date = record["date"]
+#             weather = record["weather"]
+#             temp_max = record["temp2m"]["max"]
+#             temp_min = record["temp2m"]["min"]
+#             weatherdict = dict(city = 'Ryazan', date = record["date"], weather = record["weather"], temp_max = record["temp2m"]["max"], temp_min = record["temp2m"]["min"])
+#             return weatherdict
+
+
+def get_data_from_weather_api():
+    url = f'https://www.7timer.info/bin/civillight.php?lon=39&lat=54&ac=0&unit=metric&output=json&tzshift=0'
     response = requests.get(url)
     if response.status_code == 200:
         response_data = response.json()
-        for record in response_data["dataseries"]:
-            date = record["date"]
-            weather = record["weather"]
-            temp_max = record["temp2m"]["max"]
-            temp_min = record["temp2m"]["min"]
+        return response_data['dataseries']
+
+def insert_data_into_db():
+    for record in get_data_from_weather_api():
+            statement = "INSERT INTO weather (city, date, weather, temp_max, temp_min) VALUES(%(city)s ,%(date)s ,%(weather)s, %(temp_max)s, %(temp_min)s)"
             weatherdict = dict(city = 'Ryazan', date = record["date"], weather = record["weather"], temp_max = record["temp2m"]["max"], temp_min = record["temp2m"]["min"])
-    return weatherdict
+            run_sql(statement, weatherdict)    
+
+
 if __name__ == "__main__":
-    run_sql("INSERT INTO weather (city, date, weather, temp_max, temp_min) VALUES(%(city)s ,%(date)s ,%(weather)s, %(temp_max)s, %(temp_min)s)", ryazan_dataseries())
+    insert_data_into_db()
