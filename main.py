@@ -1,9 +1,6 @@
-from array import array
-from ast import arguments
 from mysqlx import Statement
 import psycopg2
 import requests
-from array import *
 from config import config
 
 
@@ -103,7 +100,7 @@ def insert_data_into_db():
     for record in get_data_from_weather_api(lon, lat):
         statement = "INSERT INTO weather (city, date, weather, temp_max, temp_min) VALUES(%(city)s ,%(date)s ,%(weather)s, %(temp_max)s, %(temp_min)s)"
         weatherdict = dict(
-            city = cityname,
+            city=cityname,
             date=record["date"],
             weather=record["weather"],
             temp_max=record["temp2m"]["max"],
@@ -112,10 +109,13 @@ def insert_data_into_db():
         run_sql(statement, weatherdict)
 
 
-cities = [{"name": "Ryazan", "lon": "39", "lat": "54"}, {"name": "Moscow", "lon": "37.36", "lat": "54.44"}]
+cities = [
+    {"name": "Ryazan", "lon": "39", "lat": "54"},
+    {"name": "Moscow", "lon": "37.36", "lat": "54.44"},
+]
 
 if __name__ == "__main__":
-    lon = cities[1]['lon']
-    lat = cities[1]['lat']
-    cityname = cities[1]['name']
+    lon = cities[1]["lon"]
+    lat = cities[1]["lat"]
+    cityname = cities[1]["name"]
     insert_data_into_db()
