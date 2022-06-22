@@ -96,7 +96,10 @@ def get_data_from_weather_api(lon, lat):
         return response_data["dataseries"]
 
 
-def insert_data_into_db():
+def insert_data_into_db(index):
+    lon = cities[index]["lon"]
+    lat = cities[index]["lat"]
+    cityname = cities[index]["name"]
     for record in get_data_from_weather_api(lon, lat):
         statement = "INSERT INTO weather (city, date, weather, temp_max, temp_min) VALUES(%(city)s ,%(date)s ,%(weather)s, %(temp_max)s, %(temp_min)s)"
         weatherdict = dict(
@@ -109,7 +112,10 @@ def insert_data_into_db():
         run_sql(statement, weatherdict)
 
 
-def insert_data_into_update_set_db():
+def insert_data_into_update_set_db(index):
+    lon = cities[index]["lon"]
+    lat = cities[index]["lat"]
+    cityname = cities[index]["name"]
     for record in get_data_from_weather_api(lon, lat):
         statement = "INSERT INTO weather (city, date, weather, temp_max, temp_min) VALUES(%(city)s ,%(date)s ,%(weather)s, %(temp_max)s, %(temp_min)s) ON CONFLICT (city, date) DO UPDATE SET weather=EXCLUDED.weather, temp_max=EXCLUDED.temp_max, temp_min=EXCLUDED.temp_min"
         weatherdict = dict(
@@ -125,10 +131,8 @@ def insert_data_into_update_set_db():
 cities = [
     {"name": "Ryazan", "lon": "39", "lat": "54"},
     {"name": "Moscow", "lon": "37.36", "lat": "54.44"},
+    {"name": "St.Petersburg", "lon": "30.19", "lat": "59.57"}
 ]
 
 if __name__ == "__main__":
-    lon = cities[0]["lon"]
-    lat = cities[0]["lat"]
-    cityname = cities[0]["name"]
-    insert_data_into_update_set_db()
+    insert_data_into_db(1)
