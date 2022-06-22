@@ -112,10 +112,7 @@ def insert_data_into_db(index):
         run_sql(statement, weatherdict)
 
 
-def insert_data_into_update_set_db(index):
-    lon = cities[index]["lon"]
-    lat = cities[index]["lat"]
-    cityname = cities[index]["name"]
+def insert_data_into_update_set_db(cityname, lon, lat):
     for record in get_data_from_weather_api(lon, lat):
         statement = "INSERT INTO weather (city, date, weather, temp_max, temp_min) VALUES(%(city)s ,%(date)s ,%(weather)s, %(temp_max)s, %(temp_min)s) ON CONFLICT (city, date) DO UPDATE SET weather=EXCLUDED.weather, temp_max=EXCLUDED.temp_max, temp_min=EXCLUDED.temp_min"
         weatherdict = dict(
@@ -135,4 +132,5 @@ cities = [
 ]
 
 if __name__ == "__main__":
-    insert_data_into_db(1)
+    for city in cities:
+        insert_data_into_update_set_db(city['name'], city['lon'], city['lat'])
