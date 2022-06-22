@@ -109,13 +109,26 @@ def insert_data_into_db():
         run_sql(statement, weatherdict)
 
 
+def insert_data_into_duplicate_db():
+    for record in get_data_from_weather_api(lon, lat):
+        statement = "INSERT INTO weather (city, date, weather, temp_max, temp_min) VALUES(%(city)s ,%(date)s ,%(weather)s, %(temp_max)s, %(temp_min)s) ON CONFLICT (city, date) DO UPDATE SET weather=EXCLUDED.weather, temp_max=EXCLUDED.temp_max, temp_min=EXCLUDED.temp_min"
+        weatherdict = dict(
+            city=cityname,
+            date=record["date"],
+            weather=record["weather"],
+            temp_max=record["temp2m"]["max"],
+            temp_min=record["temp2m"]["min"],
+        )
+        run_sql(statement, weatherdict)
+
+
 cities = [
     {"name": "Ryazan", "lon": "39", "lat": "54"},
     {"name": "Moscow", "lon": "37.36", "lat": "54.44"},
 ]
 
 if __name__ == "__main__":
-    lon = cities[1]["lon"]
-    lat = cities[1]["lat"]
-    cityname = cities[1]["name"]
-    insert_data_into_db()
+    lon = cities[0]["lon"]
+    lat = cities[0]["lat"]
+    cityname = cities[0]["name"]
+    insert_data_into_duplicate_db()
