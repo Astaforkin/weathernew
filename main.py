@@ -1,4 +1,3 @@
-from mysqlx import Statement
 import psycopg2
 import requests
 from config import config
@@ -58,11 +57,11 @@ def get_data_from_weather_api(lon, lat):
         return response_data["dataseries"]
 
 
-def insert_data_into_db(weather_data):
+def insert_data_into_db(cityname, weather_data):
     for record in weather_data:
         statement = "INSERT INTO weather (city, date, weather, temp_max, temp_min) VALUES(%(city)s ,%(date)s ,%(weather)s, %(temp_max)s, %(temp_min)s) ON CONFLICT (city, date) DO UPDATE SET weather=EXCLUDED.weather, temp_max=EXCLUDED.temp_max, temp_min=EXCLUDED.temp_min"
         weatherdict = dict(
-            city=city['name'],
+            city=cityname,
             date=record["date"],
             weather=record["weather"],
             temp_max=record["temp2m"]["max"],
@@ -78,8 +77,8 @@ cities = [
     {"name": "St.Petersburg", "lon": "30.19", "lat": "59.57"}
 ]
 
+
 if __name__ == "__main__":
-    create_tables()
     for city in cities:
         weather_data = get_data_from_weather_api(city['lon'], city['lat'])
-        insert_data_into_db(weather_data)
+        insert_data_into_db(city['name'], weather_data)
