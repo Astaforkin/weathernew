@@ -6,14 +6,25 @@ from config import config
 def create_tables():
     commands = (
         """
+        CREATE TABLE IF NOT EXISTS cities (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(50) NOT NULL,
+            lon FLOAT NOT NULL,
+            lat FLOAT NOT NULL,
+            UNIQUE (name)
+        )
+        """,
+        """
         CREATE TABLE IF NOT EXISTS weather (
-                id serial PRIMARY KEY,
-                city varchar(50) NOT NULL,
-                date varchar(50) NOT NULL,
+                id SERIAL PRIMARY KEY,
+                city_id INTEGER NOT NULL,
+                date date NOT NULL,
                 weather varchar(50) NOT NULL,
-                temp_max varchar(50) NOT NULL,
-                temp_min varchar(50) NOT NULL,
-                UNIQUE (city, date)
+                temp_max INTEGER NOT NULL,
+                temp_min INTEGER NOT NULL,
+                UNIQUE (city_id, date),
+                FOREIGN KEY (city_id)
+                REFERENCES cities (id)
         )
         """,
     )
@@ -59,9 +70,9 @@ def get_data_from_weather_api(lon, lat):
 
 def insert_data_into_db(cityname, weather_data):
     for record in weather_data:
-        statement = "INSERT INTO weather (city, date, weather, temp_max, temp_min) VALUES(%(city)s ,%(date)s ,%(weather)s, %(temp_max)s, %(temp_min)s) ON CONFLICT (city, date) DO UPDATE SET weather=EXCLUDED.weather, temp_max=EXCLUDED.temp_max, temp_min=EXCLUDED.temp_min"
+        statement = "INSERT INTO weather (city_id, date, weather, temp_max, temp_min) VALUES( %(city_id)s, to_date('%(date)s', 'YYYYMMDD'), %(weather)s, %(temp_max)s, %(temp_min)s) ON CONFLICT (city_id, date) DO UPDATE SET weather=EXCLUDED.weather, temp_max=EXCLUDED.temp_max, temp_min=EXCLUDED.temp_min"
         weatherdict = dict(
-            city=cityname,
+            city_id=cityname,
             date=record["date"],
             weather=record["weather"],
             temp_max=record["temp2m"]["max"],
@@ -69,7 +80,15 @@ def insert_data_into_db(cityname, weather_data):
         )
         run_sql(statement, weatherdict)
 
-
+def insert_data_cities_list_into_db():
+    for city in cities:
+        statement = "INSERT INTO cities (name, lon, lat) VALUES(%(name)s ,%(lon)s ,%(lat)s) ON CONFLICT (name) DO UPDATE SET lon=EXCLUDED.lon, lat=EXCLUDED.lat RETURNING id"
+        citylist = dict(
+        name = city['name'],
+        lon = city['lon'],
+        lat = city['lat']
+        )
+        run_sql(statement, citylist)
 
 cities = [
     {"name": "Ryazan", "lon": "39", "lat": "54"},
@@ -79,6 +98,9 @@ cities = [
 
 
 if __name__ == "__main__":
+    create_tables()
+    city_id = 1
     for city in cities:
         weather_data = get_data_from_weather_api(city['lon'], city['lat'])
-        insert_data_into_db(city['name'], weather_data)
+        insert_data_into_db(city_id, weather_data)
+        city_id+=1
