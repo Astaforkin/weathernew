@@ -28,6 +28,10 @@ def create_tables():
         )
         """,
     )
+    run_sql(commands)
+
+
+def run_sql(commands):
     conn = None
     try:
         params = config()
@@ -35,22 +39,6 @@ def create_tables():
         cur = conn.cursor()
         for command in commands:
             cur.execute(command)
-        cur.close()
-        conn.commit()
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-    finally:
-        if conn is not None:
-            conn.close()
-
-
-def run_sql(statement, arguments):
-    conn = None
-    try:
-        params = config()
-        conn = psycopg2.connect(**params)
-        cur = conn.cursor()
-        cur.execute(statement, arguments)
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -80,27 +68,25 @@ def insert_data_into_db(cityname, weather_data):
         )
         run_sql(statement, weatherdict)
 
+
 def insert_data_cities_list_into_db():
     for city in cities:
         statement = "INSERT INTO cities (name, lon, lat) VALUES(%(name)s ,%(lon)s ,%(lat)s) ON CONFLICT (name) DO UPDATE SET lon=EXCLUDED.lon, lat=EXCLUDED.lat RETURNING id"
-        citylist = dict(
-        name = city['name'],
-        lon = city['lon'],
-        lat = city['lat']
-        )
+        citylist = dict(name=city["name"], lon=city["lon"], lat=city["lat"])
         run_sql(statement, citylist)
+
 
 cities = [
     {"name": "Ryazan", "lon": "39", "lat": "54"},
     {"name": "Moscow", "lon": "37.36", "lat": "54.44"},
-    {"name": "St.Petersburg", "lon": "30.19", "lat": "59.57"}
+    {"name": "St.Petersburg", "lon": "30.19", "lat": "59.57"},
 ]
 
 
 if __name__ == "__main__":
     create_tables()
-    city_id = 1
-    for city in cities:
-        weather_data = get_data_from_weather_api(city['lon'], city['lat'])
-        insert_data_into_db(city_id, weather_data)
-        city_id+=1
+    # city_id = 1
+    # for city in cities:
+    #     weather_data = get_data_from_weather_api(city["lon"], city["lat"])
+    #     insert_data_into_db(city_id, weather_data)
+    #     city_id += 1
