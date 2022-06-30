@@ -59,7 +59,7 @@ def get_data_from_weather_api(lon, lat):
 
 def insert_data_into_db(cityname, weather_data):
     for record in weather_data:
-        statement = "INSERT INTO weather (city_id, date, weather, temp_max, temp_min) VALUES( %(city_id)s, to_date('%(date)s', 'YYYYMMDD'), %(weather)s, %(temp_max)s, %(temp_min)s) ON CONFLICT (city_id, date) DO UPDATE SET weather=EXCLUDED.weather, temp_max=EXCLUDED.temp_max, temp_min=EXCLUDED.temp_min"
+        commands = "INSERT INTO weather (city_id, date, weather, temp_max, temp_min) VALUES( %(city_id)s, to_date('%(date)s', 'YYYYMMDD'), %(weather)s, %(temp_max)s, %(temp_min)s) ON CONFLICT (city_id, date) DO UPDATE SET weather=EXCLUDED.weather, temp_max=EXCLUDED.temp_max, temp_min=EXCLUDED.temp_min"
         weatherdict = dict(
             city_id=cityname,
             date=record["date"],
@@ -67,7 +67,7 @@ def insert_data_into_db(cityname, weather_data):
             temp_max=record["temp2m"]["max"],
             temp_min=record["temp2m"]["min"],
         )
-        run_sql(statement, weatherdict)
+        run_sql(commands, weatherdict)
 
 
 def insert_data_cities_list_into_db():
@@ -77,9 +77,22 @@ def insert_data_cities_list_into_db():
         run_sql(statement, citylist)
 
 def get_city_id():
-    commands = "SELECT id FROM cities"
-    for command in commands:
-        run_sql(command)
+    sql = "SELECT id FROM cities"
+    conn = None
+    try:
+        params = config()
+        conn = psycopg2.connect(**params)
+        cur = conn.cursor()
+        cur.execute(sql)
+        rows = cur.fetchall() 
+        conn.commit()
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if conn is not None:
+            conn.close()
+    return rows
 
 cities = [
     {"name": "Ryazan", "lon": "39", "lat": "54"},
