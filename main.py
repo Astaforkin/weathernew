@@ -1,3 +1,4 @@
+from mysqlx import Statement
 import psycopg2
 import requests
 from config import config
@@ -28,17 +29,17 @@ def create_tables():
         )
         """,
     )
-    run_sql(commands)
+    for command in commands:
+        run_sql(command)
 
 
-def run_sql(commands):
+def run_sql(statement, argument=None):
     conn = None
     try:
         params = config()
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
-        for command in commands:
-            cur.execute(command)
+        cur.execute(statement, argument)
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -75,6 +76,10 @@ def insert_data_cities_list_into_db():
         citylist = dict(name=city["name"], lon=city["lon"], lat=city["lat"])
         run_sql(statement, citylist)
 
+def get_city_id():
+    commands = "SELECT id FROM cities"
+    for command in commands:
+        run_sql(command)
 
 cities = [
     {"name": "Ryazan", "lon": "39", "lat": "54"},
@@ -84,9 +89,9 @@ cities = [
 
 
 if __name__ == "__main__":
-    create_tables()
-    # city_id = 1
-    # for city in cities:
-    #     weather_data = get_data_from_weather_api(city["lon"], city["lat"])
-    #     insert_data_into_db(city_id, weather_data)
-    #     city_id += 1
+    city_id = get_city_id()
+    for id in city_id:
+        for city in cities:
+            weather_data = get_data_from_weather_api(city["lon"], city["lat"])
+            insert_data_into_db(id, weather_data)
+    
