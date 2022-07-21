@@ -1,4 +1,3 @@
-from mysqlx import Statement
 import psycopg2
 import requests
 from config import config
@@ -35,18 +34,14 @@ def create_tables():
 
 def run_sql(statement, argument=None):
     conn = None
-    try:
-        params = config()
-        conn = psycopg2.connect(**params)
-        cur = conn.cursor()
-        cur.execute(statement, argument)
-        conn.commit()
-        cur.close()
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-    finally:
-        if conn is not None:
-            conn.close()
+    params = config()
+    with psycopg2.connect(**params) as conn:
+        with conn.cursor() as cur:
+            try:
+                cur.execute(statement, argument)
+                return cur.fetchall()
+            except psycopg2.ProgrammingError:
+                return cur
 
 
 def get_data_from_weather_api(lon, lat):
@@ -57,11 +52,11 @@ def get_data_from_weather_api(lon, lat):
         return response_data["dataseries"]
 
 
-def insert_data_into_db(cityname, weather_data):
+def insert_data_into_db(id, weather_data):
     for record in weather_data:
         commands = "INSERT INTO weather (city_id, date, weather, temp_max, temp_min) VALUES( %(city_id)s, to_date('%(date)s', 'YYYYMMDD'), %(weather)s, %(temp_max)s, %(temp_min)s) ON CONFLICT (city_id, date) DO UPDATE SET weather=EXCLUDED.weather, temp_max=EXCLUDED.temp_max, temp_min=EXCLUDED.temp_min"
         weatherdict = dict(
-            city_id=cityname,
+            city_id=id,
             date=record["date"],
             weather=record["weather"],
             temp_max=record["temp2m"]["max"],
@@ -76,35 +71,50 @@ def insert_data_cities_list_into_db():
         citylist = dict(name=city["name"], lon=city["lon"], lat=city["lat"])
         run_sql(statement, citylist)
 
-def get_city_id():
-    sql = "SELECT id FROM cities"
-    conn = None
-    try:
-        params = config()
-        conn = psycopg2.connect(**params)
-        cur = conn.cursor()
-        cur.execute(sql)
-        rows = cur.fetchall() 
-        conn.commit()
-        cur.close()
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-    finally:
-        if conn is not None:
-            conn.close()
-    return rows
+# def get_city_id():
+#     sql = "SELECT id FROM cities"
+#     conn = None
+#     try:
+#         params = config()
+#         conn = psycopg2.connect(**params)
+#         cur = conn.cursor()
+#         cur.execute(sql)
+#         rows = cur.fetchall() 
+#         conn.commit()
+#         cur.close()
+#     except (Exception, psycopg2.DatabaseError) as error:
+#         print(error)
+#     finally:
+#         if conn is not None:
+#             conn.close()
+#     return rows
+def get_cities_ids():
+    sql = "SELECT id, lon, lat FROM cities"
+    city_id = run_sql(sql)
+    for id in city_id:
+        print(id)
+    
+    
+    
+    
 
+    
+
+   
+     
 cities = [
     {"name": "Ryazan", "lon": "39", "lat": "54"},
     {"name": "Moscow", "lon": "37.36", "lat": "54.44"},
     {"name": "St.Petersburg", "lon": "30.19", "lat": "59.57"},
 ]
 
-
-if __name__ == "__main__":
-    city_id = get_city_id()
-    for id in city_id:
-        for city in cities:
-            weather_data = get_data_from_weather_api(city["lon"], city["lat"])
-            insert_data_into_db(id, weather_data)
+def main():
+    pass
+    # for id in city_id:
+    #     for city in cities:
+    #         weather_data = get_data_from_weather_api(city["lon"], city["lat"])
+    #         insert_data_into_db(id, weather_data)
     
+if __name__ == "__main__":
+    # get_cities_ids()
+    create_tables()
