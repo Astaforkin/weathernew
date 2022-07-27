@@ -72,10 +72,10 @@ def insert_data_cities_list_into_db():
         run_sql(statement, citylist)
 
 
-def get_cities_ids():
+def get_cities_data():
     sql = "SELECT id, lon, lat FROM cities"
-    city_id = run_sql(sql)
-    return city_id
+    city_lon_lat_id = run_sql(sql)
+    return city_lon_lat_id
     
 cities = [
     {"name": "Ryazan", "lon": "39", "lat": "54"},
@@ -84,10 +84,9 @@ cities = [
 ]
 
 def main():
-    print(get_cities_ids())
-    for id in get_cities_ids():
-        weather_data = get_data_from_weather_api(id[1], id[2])
-        insert_data_into_db(id[0], weather_data)
+    for city_data in get_cities_data():
+        weather_data = get_data_from_weather_api(city_data[1], city_data[2])
+        insert_data_into_db(city_data[0], weather_data)
     
 if __name__ == "__main__":
     main()
