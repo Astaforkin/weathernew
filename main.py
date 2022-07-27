@@ -71,37 +71,12 @@ def insert_data_cities_list_into_db():
         citylist = dict(name=city["name"], lon=city["lon"], lat=city["lat"])
         run_sql(statement, citylist)
 
-# def get_city_id():
-#     sql = "SELECT id FROM cities"
-#     conn = None
-#     try:
-#         params = config()
-#         conn = psycopg2.connect(**params)
-#         cur = conn.cursor()
-#         cur.execute(sql)
-#         rows = cur.fetchall() 
-#         conn.commit()
-#         cur.close()
-#     except (Exception, psycopg2.DatabaseError) as error:
-#         print(error)
-#     finally:
-#         if conn is not None:
-#             conn.close()
-#     return rows
+
 def get_cities_ids():
     sql = "SELECT id, lon, lat FROM cities"
     city_id = run_sql(sql)
-    for id in city_id:
-        print(id)
+    return city_id
     
-    
-    
-    
-
-    
-
-   
-     
 cities = [
     {"name": "Ryazan", "lon": "39", "lat": "54"},
     {"name": "Moscow", "lon": "37.36", "lat": "54.44"},
@@ -109,12 +84,10 @@ cities = [
 ]
 
 def main():
-    pass
-    # for id in city_id:
-    #     for city in cities:
-    #         weather_data = get_data_from_weather_api(city["lon"], city["lat"])
-    #         insert_data_into_db(id, weather_data)
+    print(get_cities_ids())
+    for id in get_cities_ids():
+        weather_data = get_data_from_weather_api(id[1], id[2])
+        insert_data_into_db(id[0], weather_data)
     
 if __name__ == "__main__":
-    # get_cities_ids()
-    create_tables()
+    main()
