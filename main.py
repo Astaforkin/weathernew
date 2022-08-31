@@ -89,4 +89,5 @@ def main():
         insert_data_into_db(city_data[0], weather_data)
     
 if __name__ == "__main__":
+    insert_data_cities_list_into_db()
     main()
